@@ -1,34 +1,126 @@
 <link rel="import" href="../polymer/polymer.html">
-
+<link rel="import" href="../paper-input-autocomplete-chips/paper-input-autocomplete-chips.html">
 <!--
-`puredat-string-many`
-
-
-@demo demo/index.html 
+	`puredat-string-many` "STRING" type, "MANY" cardinality widget.
+	
+	@demo demo/index.html 
 -->
-
 <dom-module id="puredat-string-many">
-  <template>
-    <style>
-      :host {
-        display: block;
-      }
-    </style>
-    <h2>TO-DO [[prop1]]</h2>
-  </template>
+	<template>
+		<style>
+			paper-input-autocomplete-chips {
+				--paper-input-container: {
+					padding-right: 10px;
+				}
+			}
+		</style>
+		
+		<paper-input-autocomplete-chips
+				no-chip-image
+				always-float-label
+				maxlength="[[maxLength]]"
+				max-selected-items="100"
+				label="[[label]]"
+				read-only="[[readOnly]]"
+				selected-objects="{{_values}}"
+				error-message="[[errorMessage]]"
+				invalid="[[_isInvalid(errorMessage)]]"
+				allowed-pattern="[[pattern]]"
+				allow-select-unknown-token>
+		</paper-input-autocomplete-chips>
+	</template>
+	
+	<script>
+		Polymer({
+			is: 'puredat-string-many',
+			
+			properties: {
+				
+				/** Name */
+				name: {
+					type: String
+				},
+				
+				/** Maximum length. */
+				maxLength: {
+					type: Number,
+					value: 100
+				},
+				
+				/** Allowed pattern. For example: [a-zA-Z]. */
+				pattern: {
+					type: String
+				},
+				
+				/** Descriptive label. */
+				label: {
+					type: String
+				},
+				
+				/** Values. */
+				values: {
+					type: Array,
+					notify: true,
+					observer: 'valuesChangedHandler'
+				},
 
-  <script>
-    Polymer({
-
-      is: 'puredat-string-many',
-
-      properties: {
-        prop1: {
-          type: String,
-          value: 'puredat-string-many',
-        },
-      },
-
-    });
-  </script>
+				/** Internal values. */
+				_values: {
+					type: Array
+				},
+				
+				/** Error message. */
+				errorMessage: {
+					type: String
+				},
+				
+				/** Number of columns in a row of 10 columns. */
+				cols: {
+					type: Number,
+					value: 5,
+					observer: '_colsChangedHandler'
+				},
+				
+				/** Read only. */
+				readOnly: {
+					type: Boolean,
+					value: false
+				}
+			},
+			
+			observers: [
+				'_valuesChangedHandler(_values.splices)'
+			],
+			
+			_valuesChangedHandler: function(changeRecord) {
+				if (changeRecord != null) {
+					this.values = changeRecord.indexSplices[0].object.map(function(item) {return item.text});
+				}
+			},
+			
+			_colsChangedHandler: function(newValue, oldValue) {
+				this.style.minWidth = (50 * newValue) + "px";
+				this.style.flex = (10 * newValue) + "%";
+			},
+			
+			valuesChangedHandler: function(newValue, oldValue) {
+				if (newValue == null) {
+					this.set("_values", null);
+				}
+				else {
+					this.set("_values", newValue.map(function(item) { return {text: item}}));
+				}
+			},
+			
+			/**
+			 * Returns if the field is valid.
+			 * @param {String} errorMessage The error message.
+			 * @return {Boolean} If the input field is valid.
+			 */
+			_isInvalid: function(errorMessage) {
+				return errorMessage != null
+						&& errorMessage != "";
+			}
+		});
+	</script>
 </dom-module>
